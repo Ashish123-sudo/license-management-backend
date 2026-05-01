@@ -66,13 +66,19 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                // Disable CSRF for stateless APIs to avoid 403 on POST requests
+                .csrf(csrf -> csrf.disable())
+                // Use the defined corsConfigurationSource bean
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // Set session management to stateless
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Explicitly permit all requests to authentication endpoints
                         .requestMatchers("/api/auth/**").permitAll()
+                        // Require authentication for any other request
                         .anyRequest().authenticated()
                 )
+                // Add the JWT filter before the standard UsernamePasswordAuthenticationFilter
                 .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -86,8 +92,8 @@ public class SecurityConfig {
                 "https://superlative-strudel-8cfbdf.netlify.app"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(false);
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
@@ -103,18 +109,26 @@ public class SecurityConfig {
                                             FilterChain filterChain)
                     throws ServletException, IOException {
 
-                String header = request.getHeader("Authorization");
-                if (header != null && header.startsWith("Bearer ")) {
-                    String token = header.substring(7);
-                    if (jwtUtil.isValid(token)) {
-                        String username = jwtUtil.extractUsername(token);
-                        UsernamePasswordAuthenticationToken auth =
-                                new UsernamePasswordAuthenticationToken(
-                                        username, null, List.of()
-                                );
-                        SecurityContextHolder.getContext().setAuthentication(auth);
+                try {
+                    String header = request.getHeader("Authorization");
+                    if (header != null && header.startsWith("Bearer ")) {
+                        String token = header.substring(7);
+                        // Ensure isValid doesn't throw unhandled exceptions
+                        if (jwtUtil.isValid(token)) {
+                            String username = jwtUtil.extractUsername(token);
+                            UsernamePasswordAuthenticationToken auth =
+                                    new UsernamePasswordAuthenticationToken(
+                                            username, null, List.of()
+                                    );
+                            SecurityContextHolder.getContext().setAuthentication(auth);
+                        }
                     }
+                } catch (Exception e) {
+                    // Fail silently for the security context, but allow the request to proceed
+                    SecurityContextHolder.clearContext();
                 }
+
+                // ALWAYS continue the filter chain, otherwise you get a blank response or 403
                 filterChain.doFilter(request, response);
             }
         };
