@@ -41,6 +41,11 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
+    public List<Application> getApplicationsByOwnerId(UUID ownerId) {
+        return applicationRepository.findByProductOwnerId(ownerId);
+    }
+
+    @Override
     public Application updateApplication(UUID id, Application details) {
         Application app = getApplicationById(id);
         app.setAppName(details.getAppName());

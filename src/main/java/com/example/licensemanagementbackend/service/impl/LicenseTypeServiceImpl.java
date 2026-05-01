@@ -61,6 +61,11 @@ public class LicenseTypeServiceImpl implements LicenseTypeService {
     }
 
     @Override
+    public List<LicenseType> getLicenseTypesByOwnerId(UUID ownerId) {
+        return licenseTypeRepository.findByProductOwnerId(ownerId);
+    }
+
+    @Override
     public void deleteLicenseType(UUID id) {
         LicenseType licenseType = getLicenseTypeById(id);
         licenseTypeRepository.delete(licenseType);

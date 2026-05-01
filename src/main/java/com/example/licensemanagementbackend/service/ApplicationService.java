@@ -10,4 +10,5 @@ public interface ApplicationService {
     Application getApplicationById(UUID id);
     Application updateApplication(UUID id, Application applicationDetails);
     void deleteApplication(UUID id);
+    List<Application> getApplicationsByOwnerId(UUID ownerId);
 }

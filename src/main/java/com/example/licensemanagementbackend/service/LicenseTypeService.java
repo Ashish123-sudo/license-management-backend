@@ -11,4 +11,5 @@ public interface LicenseTypeService {
     List<LicenseType> getLicenseTypesByAppId(UUID appId);
     LicenseType updateLicenseType(UUID id, LicenseType details);
     void deleteLicenseType(UUID id);
+    List<LicenseType> getLicenseTypesByOwnerId(UUID ownerId);
 }

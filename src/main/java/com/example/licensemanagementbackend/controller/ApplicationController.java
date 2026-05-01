@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import java.util.Map;
-
+import com.example.licensemanagementbackend.model.User;
+import com.example.licensemanagementbackend.repository.UserRepository;
+import com.example.licensemanagementbackend.util.JwtUtil;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,6 +21,11 @@ public class ApplicationController {
 
     @Autowired
     private ApplicationService applicationService;
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping
     public ResponseEntity<Application> createApplication(@RequestBody Application application) {
@@ -33,6 +40,16 @@ public class ApplicationController {
     @GetMapping("/{id}")
     public ResponseEntity<Application> getApplicationById(@PathVariable UUID id) {
         return ResponseEntity.ok(applicationService.getApplicationById(id));
+    }
+
+    @GetMapping("/my-apps")
+    public ResponseEntity<List<Application>> getMyApps(
+            @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        String username = jwtUtil.extractUsername(token);
+        User user = userRepository.findByUserName(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return ResponseEntity.ok(applicationService.getApplicationsByOwnerId(user.getUserId()));
     }
 
     @PutMapping("/{id}")

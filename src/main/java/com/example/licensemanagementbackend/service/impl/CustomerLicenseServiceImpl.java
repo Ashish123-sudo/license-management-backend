@@ -80,6 +80,11 @@ public class CustomerLicenseServiceImpl implements CustomerLicenseService {
     }
 
     @Override
+    public List<CustomerLicense> getCustomerLicensesByOwnerId(UUID ownerId) {
+        return repository.findByProductOwnerId(ownerId);
+    }
+
+    @Override
     public void deleteCustomerLicense(UUID id) {
         repository.deleteById(id);
     }

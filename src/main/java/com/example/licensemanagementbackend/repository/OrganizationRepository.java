@@ -19,6 +19,8 @@ public interface OrganizationRepository extends JpaRepository<Organization, UUID
 
     List<Organization> findByCountry(String country);
 
+    List<Organization> findByOrgNameContainingIgnoreCase(String orgName);
+
     List<Organization> findByIndustry(String industry);
 
     boolean existsByOrgCode(String orgCode);

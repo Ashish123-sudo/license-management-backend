@@ -5,7 +5,9 @@ import com.example.licensemanagementbackend.service.CustomerLicenseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import com.example.licensemanagementbackend.model.User;
+import com.example.licensemanagementbackend.repository.UserRepository;
+import com.example.licensemanagementbackend.util.JwtUtil;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,6 +18,21 @@ public class CustomerLicenseController {
 
     @Autowired
     private CustomerLicenseService customerLicenseService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @GetMapping("/my-licenses")
+    public ResponseEntity<List<CustomerLicense>> getMyCustomerLicenses(
+            @RequestHeader("Authorization") String authHeader) {
+        String username = jwtUtil.extractUsername(authHeader.substring(7));
+        User user = userRepository.findByUserName(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return ResponseEntity.ok(customerLicenseService.getCustomerLicensesByOwnerId(user.getUserId()));
+    }
 
     @PostMapping
     public ResponseEntity<CustomerLicense> assignLicense(@RequestBody CustomerLicense customerLicense) {

@@ -12,4 +12,5 @@ public interface CustomerLicenseService {
     List<CustomerLicense> getLicensesByApp(UUID appId);
     CustomerLicense updateCustomerLicense(UUID id, CustomerLicense details);
     void deleteCustomerLicense(UUID id);
+    List<CustomerLicense> getCustomerLicensesByOwnerId(UUID ownerId);
 }

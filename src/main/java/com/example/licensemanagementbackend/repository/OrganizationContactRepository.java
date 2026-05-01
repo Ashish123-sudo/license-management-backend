@@ -17,6 +17,8 @@ public interface OrganizationContactRepository extends JpaRepository<Organizatio
 
     List<OrganizationContact> findByIsActive(Boolean isActive);
 
+    List<OrganizationContact> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(String firstName, String lastName);
+
     Optional<OrganizationContact> findByEmail(String email);
 
     boolean existsByEmail(String email);
