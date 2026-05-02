@@ -17,12 +17,8 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder; // ← add this
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        try {
-            return ResponseEntity.ok(authService.login(request));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(e.getMessage() + " | " + e.getClass().getName());
-        }
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
     }
 
     @GetMapping("/test-password")
