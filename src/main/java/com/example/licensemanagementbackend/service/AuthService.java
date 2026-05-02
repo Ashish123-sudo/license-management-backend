@@ -1,5 +1,5 @@
 package com.example.licensemanagementbackend.service;
-
+import java.util.Optional;
 import com.example.licensemanagementbackend.dto.LoginRequest;
 import com.example.licensemanagementbackend.dto.LoginResponse;
 import com.example.licensemanagementbackend.model.Application;
@@ -52,5 +52,9 @@ public class AuthService {
         );
 
         return new LoginResponse(token, userDto);
+    }
+
+    public Optional<User> findUser(String username) {
+        return userRepository.findByUserName(username);
     }
 }

@@ -24,5 +24,17 @@ public class AuthController {
         }
     }
 
+    @GetMapping("/test-password")
+    public ResponseEntity<String> testPassword() {
+        String raw = "password123";
+        String hash = "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy";
+        boolean matches = passwordEncoder.matches(raw, hash);
+
+        var userOpt = authService.findUser("admin");
+        String dbHash = userOpt.map(u -> u.getPassword()).orElse("USER NOT FOUND");
+
+        return ResponseEntity.ok("matches=" + matches + " | dbHash=" + dbHash);
+    }
+
 
 }
