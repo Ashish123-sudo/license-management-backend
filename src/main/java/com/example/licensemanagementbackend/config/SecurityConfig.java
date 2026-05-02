@@ -18,7 +18,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -66,18 +65,14 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // Disable CSRF for stateless APIs to avoid 403 on POST requests
                 .csrf(csrf -> csrf.disable())
-                // Use the defined corsConfigurationSource bean
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                // Set session management to stateless
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )
-                // Add the JWT filter before the standard UsernamePasswordAuthenticationFilter
                 .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -112,7 +107,6 @@ public class SecurityConfig {
                     String header = request.getHeader("Authorization");
                     if (header != null && header.startsWith("Bearer ")) {
                         String token = header.substring(7);
-                        // Ensure isValid doesn't throw unhandled exceptions
                         if (jwtUtil.isValid(token)) {
                             String username = jwtUtil.extractUsername(token);
                             UsernamePasswordAuthenticationToken auth =
@@ -123,18 +117,11 @@ public class SecurityConfig {
                         }
                     }
                 } catch (Exception e) {
-                    // Fail silently for the security context, but allow the request to proceed
                     SecurityContextHolder.clearContext();
                 }
 
-                // ALWAYS continue the filter chain, otherwise you get a blank response or 403
                 filterChain.doFilter(request, response);
             }
         };
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 }
