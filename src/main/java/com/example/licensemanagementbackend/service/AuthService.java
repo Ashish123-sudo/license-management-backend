@@ -25,16 +25,15 @@ public class AuthService {
 
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByUserName(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+                .orElseThrow(() -> new RuntimeException("User not found: " + request.getUsername()));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new RuntimeException("Password does not match for user: " + request.getUsername());
         }
 
         String roleName = user.getRole().getName();
         String token = jwtUtil.generateToken(user.getUserName());
 
-        // Only fetch assigned apps for PRODUCT_ADMIN
         List<UUID> assignedAppIds = null;
         if ("PRODUCT_ADMIN".equals(roleName)) {
             assignedAppIds = applicationRepository
@@ -45,7 +44,7 @@ public class AuthService {
         }
 
         LoginResponse.UserDto userDto = new LoginResponse.UserDto(
-                user.getUserId(),       // ← add this as first argument
+                user.getUserId(),
                 user.getUserName(),
                 roleName,
                 List.of(),
